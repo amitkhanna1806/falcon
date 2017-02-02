@@ -17,9 +17,17 @@
  */
 package org.apache.falcon.unit;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.ParseException;
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import org.apache.falcon.FalconException;
 import org.apache.falcon.FalconWebException;
 import org.apache.falcon.entity.EntityNotRegisteredException;
+import static org.apache.falcon.entity.EntityUtil.getEntity;
 import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.process.Process;
 import org.apache.falcon.entity.v0.process.Property;
@@ -38,11 +46,11 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import java.io.BufferedWriter;
@@ -52,6 +60,7 @@ import java.io.IOException;
 import java.text.ParseException;
 
 import static org.apache.falcon.entity.EntityUtil.getEntity;
+
 
 /**
  * Test cases of falcon jobs using Local Oozie and LocalJobRunner.
@@ -483,16 +492,33 @@ public class TestFalconUnit extends FalconUnitTestBase {
         assertStatus(apiResult);
         Assert.assertEquals(apiResult.getMessage(), "RUNNING");
 
+        // update will fail in case of an extension being disabled
+        disableExtension(TEST_EXTENSION);
+        try {
+            updateExtensionJob(TEST_JOB, getAbsolutePath(EXTENSION_PROPERTIES), null);
+            Assert.fail("Should have thrown a FalconWebException");
+        } catch (FalconWebException e) {
+            Assert.assertEquals(((APIResult) e.getResponse().getEntity()).getMessage(), "Extension: "
+                    + TEST_EXTENSION + " is in disabled state.");
+        }
+        enableExtension(TEST_EXTENSION);
+
         apiResult = updateExtensionJob(TEST_JOB, getAbsolutePath(EXTENSION_PROPERTIES), null);
         assertStatus(apiResult);
 
+<<<<<<< HEAD
         String processes = new JSONObject(getExtensionJobDetails(TEST_JOB, CurrentUser.getUser()).getMessage())
                 .get("processes").toString();
+=======
+        String processes = new JSONObject(getExtensionJobDetails(TEST_JOB).getMessage()).get("processes").toString();
+        JSONArray processObjects = new JSONArray();
+>>>>>>> fde979f2cf58bc6ac1b736bd2349d5e93e843f8c
         JSONObject processObject = new JSONObject();
         processObject.put("name", "sample");
         processObject.put("status", "EXISTS");
+        processObjects.put(processObject);
 
-        Assert.assertEquals(processes, processObject.toString());
+        Assert.assertEquals(processes, processObjects.toString());
         process = (Process) getClient().getDefinition(EntityType.PROCESS.toString(), "sample", null);
         Assert.assertEquals(process.getPipelines(), "testSample");
 
