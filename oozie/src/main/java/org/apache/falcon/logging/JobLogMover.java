@@ -92,12 +92,12 @@ public class JobLogMover {
                         context.getWorkflowId(), context.getWorkflowStatus());
                 return 0;
             }
-            String instanceOwner = context.getWorkflowUser();
-            if (StringUtils.isNotBlank(instanceOwner)) {
-                CurrentUser.authenticate(instanceOwner);
-            } else {
-                CurrentUser.authenticate(System.getProperty("user.name"));
-            }
+
+            String instanceOwner = StringUtils.isNotBlank(context.getWorkflowUser()) ? context.getWorkflowUser()
+                    : System.getProperty("user.name");
+            CurrentUser.authenticate(instanceOwner);
+            CurrentUser.proxy(instanceOwner, null);
+
             OozieClient client = new OozieClient(engineUrl);
             WorkflowJob jobInfo;
             try {
