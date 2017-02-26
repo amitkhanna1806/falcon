@@ -51,8 +51,15 @@ public class FalconStateStoreDBCLI {
 
     // Represents whether DB instance exists or not.
     private boolean instanceExists;
+    private static final String GET_FALCON_PROPS_INFO = "select name, data from FALCON_DB_PROPS order by name";
+    private static final String GET_FALCON_DB_VERSION = "select data from FALCON_DB_PROPS where name = 'db.version'";
+    private static final String FALCON_DB_PROPS_EXISTS = "select count(*) from FALCON_DB_PROPS";
+    private static final String ENTITY_STATUS_QUERY =
+            "select count(*) from ENTITIES where current_state IN ('RUNNING', 'SUSPENDED')";
+    private static final String CREATE_FALCON_DB_PROPS =
+            "create table FALCON_DB_PROPS (name varchar(100), data varchar(100))";
     private static final String[] FALCON_HELP =
-    {"Falcon DB initialization tool currently supports Derby DB/ Mysql/ PostgreSQL"};
+            {"Falcon DB initialization tool currently supports Derby DB/ Mysql/ PostgreSQL"};
 
     public static void main(String[] args) {
         new FalconStateStoreDBCLI().run(args);
@@ -176,8 +183,6 @@ public class FalconStateStoreDBCLI {
         System.out.println("DONE");
     }
 
-    private static final String GET_FALCON_DB_VERSION = "select data from FALCON_DB_PROPS where name = 'db.version'";
-
     private String getFalconDBVersion() throws Exception {
         String version;
         System.out.println("Get Falcon DB version");
@@ -202,7 +207,6 @@ public class FalconStateStoreDBCLI {
         System.out.println("DONE");
         return version;
     }
-
 
     private Map<String, String> getJdbcConf() throws Exception {
         Map<String, String> jdbcConf = new HashMap<String, String>();
@@ -258,7 +262,6 @@ public class FalconStateStoreDBCLI {
         if (checkDBExists()) {
             return;
         }
-
         verifyFalconPropsTable(false);
         createUpgradeDB(sqlFile, run, true);
         createFalconPropsTable(sqlFile, run, BuildProperties.get().getProperty("project.version"));
@@ -267,9 +270,6 @@ public class FalconStateStoreDBCLI {
                     + BuildProperties.get().getProperty("project.version") + "'");
         }
     }
-
-    private static final String CREATE_FALCON_DB_PROPS =
-            "create table FALCON_DB_PROPS (name varchar(100), data varchar(100))";
 
     private void createFalconPropsTable(String sqlFile, boolean run, String version) throws Exception {
         String insertDbVersion = "insert into FALCON_DB_PROPS (name, data) values ('db.version', '" + version + "')";
@@ -298,8 +298,6 @@ public class FalconStateStoreDBCLI {
         }
         System.out.println("DONE");
     }
-
-    private static final String FALCON_DB_PROPS_EXISTS = "select count(*) from FALCON_DB_PROPS";
 
     private boolean verifyFalconPropsTable(boolean exists) throws Exception {
         System.out.println((exists) ? "Check FALCON_DB_PROPS table exists"
@@ -364,11 +362,6 @@ public class FalconStateStoreDBCLI {
         }
     }
 
-    private static final String ENTITY_STATUS_QUERY =
-            "select count(*) from ENTITIES where current_state IN ('RUNNING', 'SUSPENDED')";
-    private static final String INSTANCE_STATUS_QUERY =
-            "select count(*) from INSTANCES where current_state IN ('RUNNING', 'SUSPENDED')";
-
     private boolean checkDBExists() throws Exception {
         boolean schemaExists;
         Connection conn = createConnection();
@@ -415,8 +408,6 @@ public class FalconStateStoreDBCLI {
         }
         showFalconPropsInfo();
     }
-
-    private static final String GET_FALCON_PROPS_INFO = "select name, data from FALCON_DB_PROPS order by name";
 
     private void showFalconPropsInfo() throws Exception {
         Connection conn = createConnection();
