@@ -52,7 +52,7 @@ public class AbstractSchedulerTestBase extends AbstractTestBase {
     }
 
     private void cleanupDB() throws IOException {
-        //fs.delete(new Path(DB_BASE_DIR), true);
+        fs.delete(new Path(DB_BASE_DIR), true);
     }
 
     public void createDB(String file) {
