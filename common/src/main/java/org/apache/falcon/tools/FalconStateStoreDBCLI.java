@@ -228,7 +228,7 @@ public class FalconStateStoreDBCLI {
         Map<String, String> conf = getJdbcConf();
         List<String> args = new ArrayList<String>();
         args.add("-schemaAction");
-        args.add("add");
+        args.add("refresh");
         args.add("-p");
         args.add("persistence.xml#falcon-" + conf.get("dbtype"));
         args.add("-connectionDriverName");
