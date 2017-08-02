@@ -57,7 +57,8 @@ public class ColoMigration {
 
                             List<org.apache.falcon.entity.v0.process.Cluster> processClusterToRemove = new ArrayList<>();
                             for (org.apache.falcon.entity.v0.process.Cluster cluster : clusters) {
-                                if (cluster.getName().equals("hkg1-opal") || cluster.getName().equals("uj1-topaz") || cluster.getName().equals("wc1-ssp")) {
+                                if (cluster.getName().equals("hkg1-opal") || cluster.getName().equals("uj1-topaz") || cluster.getName().equals("wc1-ssp")
+                                        || cluster.getName().equals("uh1-krypton")) {
                                     processClusterToRemove.add(cluster);
                                 }
                             }
@@ -106,8 +107,15 @@ public class ColoMigration {
                             List<org.apache.falcon.entity.v0.feed.Cluster> feedClusterToRemove = new ArrayList<>();
                             for (org.apache.falcon.entity.v0.feed.Cluster cluster : feed_clusters) {
                                 if (cluster.getName().equals("hkg1-opal") || cluster.getName().equals("uj1-topaz")
-                                        || cluster.getName().equals("wc1-ssp") || cluster.getName().equals("hkg1-opal-secondary")) {
+                                        || cluster.getName().equals("wc1-ssp") || cluster.getName().equals("uh1-krypton")
+                                        || cluster.getName().equals("hkg1-opal-secondary")) {
                                     feedClusterToRemove.add(cluster);
+                                }
+
+                                if(cluster.getName().equals("uh1-krypton-secondary")) {
+                                    cluster.setName("dfw1-onyx-secondary");
+                                    Date date = new Date(1501200000L);
+                                    cluster.getValidity().setStart(date);
                                 }
                             }
                             feed_clusters.removeAll(feedClusterToRemove);
@@ -119,7 +127,6 @@ public class ColoMigration {
                             if(feedClusterNames.size() != 0) {
                                 feedClusterNames.add("prism");
                             }
-
                             for (String colo : feedClusterNames) {
                                 File entityFile = new File(new Path(newPath + File.separator + colo + File.separator
                                         + file.getName()).toUri().toURL().getPath());
