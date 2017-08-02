@@ -30,7 +30,7 @@ public class ColoMigration {
         }
         String entitytype = args[0].trim().toLowerCase();
         String oldEntities = args[1];
-        String outpath = args[2];
+        String outpath = args[2];`
         changeEntities(entitytype, oldEntities, outpath);
     }
 
