@@ -25,7 +25,7 @@
     <parent>
         <groupId>org.apache.falcon</groupId>
         <artifactId>falcon-main</artifactId>
-        <version>0.11-SNAPSHOT</version>
+        <version>0.11</version>
     </parent>
     <artifactId>falcon-common</artifactId>
     <description>Apache Falcon Common Module</description>
@@ -72,6 +72,12 @@
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-auth</artifactId>
             <scope>compile</scope>
         </dependency>
 
@@ -248,10 +254,31 @@
             <artifactId>validation-api</artifactId>
             <version>${javax-validation.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.inmobi.dp</groupId>
+            <artifactId>fetl-tools</artifactId>
+            <version>0.1.68-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.falcon</groupId>
+            <artifactId>falcon-common-types</artifactId>
+            <version>0.11-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>org.apache.falcon.ColoMigration</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -283,7 +310,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.4</version>
+                <version>3.0.2</version>
                 <configuration>
                     <excludes>
                         <exclude>**/log4j.xml</exclude>
