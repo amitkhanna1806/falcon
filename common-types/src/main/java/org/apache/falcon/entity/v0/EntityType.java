@@ -36,7 +36,7 @@ import java.util.Arrays;
 /**
  * Enum for types of entities in Falcon Process, Feed and Cluster.
  */
-public enum EntityType {
+public enum     EntityType {
     FEED(Feed.class, "/feed-0.1.xsd", "name"),
     PROCESS(Process.class, "/process-0.1.xsd", "name"),
     CLUSTER(Cluster.class, "/cluster-0.1.xsd", "name"),

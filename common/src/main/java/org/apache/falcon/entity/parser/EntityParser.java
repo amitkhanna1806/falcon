@@ -96,7 +96,7 @@ public abstract class EntityParser<T extends Entity> {
             // parse against schema
             Unmarshaller unmarshaller = entityType.getUnmarshaller();
             T entity = (T) unmarshaller.unmarshal(xsr);
-            LOG.info("Parsed Entity: {}", entity.getName());
+//            LOG.info("Parsed Entity: {}", entity.getName());
             return entity;
         } catch (Exception e) {
             throw new FalconException(e);
