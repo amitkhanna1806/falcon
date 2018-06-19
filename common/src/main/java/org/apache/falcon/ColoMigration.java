@@ -27,6 +27,7 @@ import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.feed.*;
 import org.apache.falcon.entity.v0.process.*;
 import org.apache.falcon.entity.v0.process.ACL;
+import org.apache.falcon.entity.v0.process.Cluster;
 import org.apache.falcon.entity.v0.process.Process;
 import org.apache.hadoop.fs.BufferedFSInputStream;
 import org.apache.hadoop.fs.Path;
@@ -48,7 +49,8 @@ public class ColoMigration {
     }
 
     public static void changeEntities(String entityType, String oldPath, String newPath, String newClusterName,
-                                      String newColoName) throws IOException {
+                                      String newColoName) throws IOException, ParseException, FalconException,
+        JAXBException {
 //        ArrayList processList = new ArrayList();
 //        ArrayList feedList = new ArrayList();
 //        File fileAclProcess = new File("/home/amit.khanna/aclListProcess2.txt");
@@ -81,31 +83,33 @@ public class ColoMigration {
                             Process process = (Process) entityParser.parse(xmlStream);
                             org.apache.falcon.entity.v0.process.Clusters entityClusters = process.getClusters();
                             List<org.apache.falcon.entity.v0.process.Cluster> clusters = entityClusters.getClusters();
-                            if (process.getACL() != null && process.getACL().getGroup() != null) {
-                                if (userSet.contains(process.getACL().getOwner())) {
-                                    ACL acl = new ACL();
-                                    acl.setOwner(process.getACL().getOwner());
-                                    acl.setGroup(process.getACL().getOwner() + "-rw");
-                                    process.setACL(acl);
-                                    filter = true;
-                                    //aclBufferedWriterProcess.write(process.getACL().getOwner() + "#" + process.getACL
-                                    //    ().getGroup() + "\n");
-                                }
+                                if (process.getACL() != null && process.getACL().getGroup() != null) {
+                                    if (userSet.contains(process.getACL().getOwner())) {
+                                        ACL acl = new ACL();
+                                        acl.setOwner(process.getACL().getOwner());
+                                        acl.setGroup(process.getACL().getOwner() + "-rw");
+                                        process.setACL(acl);
+                                        filter = true;
+                                        //aclBufferedWriterProcess.write(process.getACL().getOwner() + "#" + process.getACL
 
-                            } else if (process.getACL() != null && process.getACL().getGroup() == null) {
-                                //  aclBufferedWriterProcess.write( process.getName() + " process owner is " + process.getACL().getOwner()+"\n");
-                            } else {
-                                //aclBufferedWriterProcess.write(process.getName() + " process does not have acl \n");
-                            }
-//                            org.apache.falcon.entity.v0.process.Validity validity = new org.apache.falcon.entity.v0.process.Validity();
+                                        //    ().getGroup() + "\n");
+                                    }
+
+                                } else if (process.getACL() != null && process.getACL().getGroup() == null) {
+                                    //  aclBufferedWriterProcess.write( process.getName() + " process owner is " +
+                                    // process.getACL().getOwner()+"\n");
+                                } else {
+                                    //aclBufferedWriterProcess.write(process.getName() + " process does not have acl \n");
+                                }
+//                                org.apache.falcon.entity.v0.process.Validity validity = new org.apache.falcon.entity.v0.process.Validity();
 //
-//                            Date startDate= simpleDateFormat.parse("2017-12-22T00:00:00Z");
-//                            Date endDate = simpleDateFormat.parse("2099-12-20T00:00:00Z");
-//                            validity.setStart(startDate);
-//                            validity.setEnd(endDate);
+//                                Date startDate = simpleDateFormat.parse("2017-12-22T00:00:00Z");
+//                                Date endDate = simpleDateFormat.parse("2099-12-20T00:00:00Z");
+//                                validity.setStart(startDate);
+//                                validity.setEnd(endDate);
 //
 //
-//                            org.apache.falcon.entity.v0.process.Cluster processClusterToAdd = new org.apache.falcon.entity.v0.process.Cluster();
+//                                org.apache.falcon.entity.v0.process.Cluster processClusterToAdd = new org.apache.falcon.entity.v0.process.Cluster();
 
 //                            for (org.apache.falcon.entity.v0.process.Cluster cluster : clusters) {
 //                                if (cluster.getName().equals("lhr1-emerald")) {
@@ -119,61 +123,66 @@ public class ColoMigration {
 
 //                            process.getClusters().getClusters().add(processClusterToAdd);
 //
-                            // filter on start date for processes
+                                // filter on start date for processes
 //                            boolean filter = false;
-//                            List<String> processClusterNames = new ArrayList<>();
-//                            for (org.apache.falcon.entity.v0.process.Cluster cluster : clusters) {
-//                                Date clusterDate = cluster.getValidity().getEnd();
-//                                processClusterNames.add(cluster.getName());
-//                                if (clusterDate.getTime() > System.currentTimeMillis() ) {
-//                                    filter = true;
-//                                }
-//                            }
+                                List<String> processClusterNames = new ArrayList<>();
+                                for (org.apache.falcon.entity.v0.process.Cluster cluster : clusters) {
+                                    Date clusterDate = cluster.getValidity().getEnd();
+                                    processClusterNames.add(cluster.getName());
+                                    if (clusterDate.getTime() > System.currentTimeMillis()) {
+                                        filter = true;
+                                    }
+                                }
 
-//                            if(processClusterNames.size() != 0) {
-//                                processClusterNames.add("prism");
-//                            } else {
-//                                System.out.println("process to delete: " + file.getAbsolutePath());
-//                            }
+                                if (processClusterNames.size() != 0) {
+                                    processClusterNames.add("prism");
+                                } else {
+                                    System.out.println("process to delete: " + file.getAbsolutePath());
+                                }
 //
-                        if(filter) {
-                            File entityFile = new File(newPath + File.separator +
-                                file.getName());
-                            entityFile.getParentFile().mkdirs();
-                            System.out.println("File path : " + entityFile.getAbsolutePath());
-                            if (!entityFile.createNewFile()) {
-                                System.out.println("Not able to stage the entities in the tmp path");
-                                return;
+
+                            for (String processClusterName : processClusterNames) {
+                                if (filter) {
+                                    File entityFile = new File(newPath + File.separator + processClusterName +  File.separator + file.getName());
+                                    entityFile.getParentFile().mkdirs();
+                                    System.out.println("File path : " + entityFile.getAbsolutePath());
+                                    if (!entityFile.createNewFile()) {
+                                        System.out.println("Not able to stage the entities in the tmp path");
+                                        return;
+                                    }
+                                    out = new FileOutputStream(entityFile);
+                                    type.getMarshaller().marshal(process, out);
+                                    out.close();
+                                }
                             }
-                            out = new FileOutputStream(entityFile);
-                            type.getMarshaller().marshal(process, out);
-                            out.close();
-                        }
 //
 //                            break;
 
 
-                        case FEED:
-                            Feed feed = (Feed) entityParser.parse(xmlStream);
+                                case FEED:
+                                    Feed feed = (Feed) entityParser.parse(xmlStream);
 
-                            org.apache.falcon.entity.v0.feed.Clusters feedClusters = feed.getClusters();
-                            List<org.apache.falcon.entity.v0.feed.Cluster> feed_clusters = feedClusters.getClusters();
-                            if (feed.getACL() != null && feed.getACL().getGroup() != null) {
+                                    org.apache.falcon.entity.v0.feed.Clusters feedClusters = feed.getClusters();
+                                    List<org.apache.falcon.entity.v0.feed.Cluster> feed_clusters = feedClusters.getClusters();
+
+                                    if (feed.getACL() != null && feed.getACL().getGroup() != null) {
 //                                String aclStringFeed = feed.getACL().getOwner() + "#" + feed.getACL().getGroup();
-                                if (userSet.contains(feed.getACL().getOwner())) {
-                                    org.apache.falcon.entity.v0.feed.ACL acl = new org.apache.falcon.entity.v0.feed.ACL();
-                                    acl.setOwner(feed.getACL().getOwner());
-                                    acl.setGroup(feed.getACL().getOwner() + "-rw");
-                                    feed.setACL(acl);
-                                    filter = true;
+                                        if (userSet.contains(feed.getACL().getOwner())) {
+                                            org.apache.falcon.entity.v0.feed.ACL acl = new org.apache.falcon.entity
+                                                .v0.feed.ACL();
+                                            acl.setOwner(feed.getACL().getOwner());
+                                            acl.setGroup(feed.getACL().getOwner() + "-rw");
+                                            feed.setACL(acl);
+                                            filter = true;
 
-                                } else if (feed.getACL() != null && feed.getACL().getGroup() == null) {
-                                    // aclBufferedWriterFeed.write(feed.getName()+ "#" +feed.getName() + " feed owner is " + feed.getACL().getOwner()+"\n");
+                                        } else if (feed.getACL() != null && feed.getACL().getGroup() == null) {
+                                            // aclBufferedWriterFeed.write(feed.getName()+ "#" +feed.getName() + "
+                                            // feed owner is " + feed.getACL().getOwner()+"\n");
 
 
-                                } else {
-                                    //aclBufferedWriterFeed.write(feed.getName() + " feed does not have acl \n");
-                                }
+                                        } else {
+                                            //aclBufferedWriterFeed.write(feed.getName() + " feed does not have acl \n");
+                                        }
 //                            startDate= simpleDateFormat.parse("2017-11-20T00:00:00Z");
 //                            endDate = simpleDateFormat.parse("2099-11-20T00:00:00Z");
 //                            org.apache.falcon.entity.v0.feed.Validity feedValidity = new org.apache.falcon.entity.v0.feed.Validity();
@@ -227,42 +236,43 @@ public class ColoMigration {
 
 //                                feed.getClusters().getClusters().add(feedClusterToAdd);
 //
-//                                List<String> feedClusterNames = new ArrayList<>();
-//                                for (org.apache.falcon.entity.v0.feed.Cluster cluster : feed_clusters) {
-//                                    feedClusterNames.add(cluster.getName());
-//                                }
-//                                if(feedClusterNames.size() != 0) {
-//                                    feedClusterNames.add("prism");
-//                                } else {
-//                                    System.out.println("Feed to delete: " + file.getAbsolutePath());
-//                                }
-//                                for (String colo : feedClusterNames) {
-                                if(filter){
-                                File entityFile2 = new File(newPath + File.separator
-                                    + file.getName());
-                                entityFile2.getParentFile().mkdirs();
-                                System.out.println("File path : " + entityFile2.getAbsolutePath());
-                                if (!entityFile2.createNewFile()) {
-                                    System.out.println("Not able to stage the entities in the tmp path");
-                                    return;
+                                List<String> feedClusterNames = new ArrayList<>();
+                                for (org.apache.falcon.entity.v0.feed.Cluster cluster : feed_clusters) {
+                                    feedClusterNames.add(cluster.getName());
                                 }
-                                out = new FileOutputStream(entityFile2);
-                                type.getMarshaller().marshal(feed, out);
-                                out.close();
+                                if(feedClusterNames.size() != 0) {
+                                    feedClusterNames.add("prism");
+                                } else {
+                                    System.out.println("Feed to delete: " + file.getAbsolutePath());
                                 }
+                                        for (String colo : feedClusterNames) {
+                                            if (filter) {
+                                                File entityFile2 = new File(newPath + File.separator + colo + File.separator + file.getName());
+                                                entityFile2.getParentFile().mkdirs();
+                                                System.out.println("File path : " + entityFile2.getAbsolutePath());
+                                                if (!entityFile2.createNewFile()) {
+                                                    System.out.println("Not able to stage the entities in the tmp path");
+
+                                                    return;
+                                                }
+                                                out = new FileOutputStream(entityFile2);
+                                                type.getMarshaller().marshal(feed, out);
+                                                out.close();
+                                            }
+                                        }
+                                    }
                             }
-                    }
-                } catch (FileNotFoundException | FalconException e) {
-                    System.out.println(e.toString());
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    } catch(FileNotFoundException | FalconException e){
+                        System.out.println(e.toString());
+                    } catch(IOException e){
+                        e.printStackTrace();
 //                    System.out.println(e.toString());
-                } catch (JAXBException e) {
-                    e.printStackTrace();
+                    } catch(JAXBException e){
+                        e.printStackTrace();
+                    }
                 }
             }
         }
-    }
     public static HashSet<String> getUsers() throws IOException {
 
         HashSet<String> userSet = new HashSet<>();
