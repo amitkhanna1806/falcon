@@ -153,13 +153,6 @@ public class OozieWorkflowEngine extends AbstractWorkflowEngine {
         if (StartupProperties.isServerInSafeMode()) {
             throwSafemodeException("SCHEDULE");
         }
-        //Adding group information to pass to oozie
-        if (entity.getACL() != null && entity.getACL().getGroup() != null) {
-            if (suppliedProps == null) {
-                suppliedProps = new HashMap<>();
-            }
-            suppliedProps.put(OozieClient.GROUP_NAME, entity.getACL().getGroup());
-        }
         Map<String, BundleJob> bundleMap = findLatestBundle(entity);
         List<String> schedClusters = new ArrayList<String>();
         for (Map.Entry<String, BundleJob> entry : bundleMap.entrySet()) {
@@ -1658,6 +1651,13 @@ public class OozieWorkflowEngine extends AbstractWorkflowEngine {
     private String scheduleEntity(String cluster, Properties props, Entity entity) throws FalconException {
         for (WorkflowEngineActionListener listener : listeners) {
             listener.beforeSchedule(entity, cluster);
+        }
+        //Adding group information to pass to oozie
+        if (entity.getACL() != null && entity.getACL().getGroup() != null) {
+            if (props == null) {
+                props = new Properties();
+            }
+            props.put(OozieClient.GROUP_NAME, entity.getACL().getGroup());
         }
         String jobId = run(cluster, props);
         for (WorkflowEngineActionListener listener : listeners) {
