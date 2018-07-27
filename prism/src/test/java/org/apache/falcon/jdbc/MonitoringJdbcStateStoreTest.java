@@ -154,12 +154,12 @@ public class MonitoringJdbcStateStoreTest extends AbstractTestBase {
         Date dateOne =  SchemaHelper.parseDateUTC("2015-11-20T00:00Z");
         store.putSLAAlertInstance("test-feed1", "test-cluster", EntityType.FEED.toString(),
                 dateOne, Boolean.TRUE, Boolean.FALSE);
-        Assert.assertEquals(Boolean.TRUE, store.getEntityAlertList("test-feed1",
+        Assert.assertEquals(Boolean.TRUE, store.getAlertInstancesList("test-feed1",
                 "test-cluster", dateOne, EntityType.FEED.toString()).get(0).getIsSLALowMissed());
-        Assert.assertTrue(dateOne.equals(store.getEntityAlertList("test-feed1",
+        Assert.assertTrue(dateOne.equals(store.getAlertInstancesList("test-feed1",
                 "test-cluster", dateOne, EntityType.FEED.toString()).get(0).getNominalTime()));
         store.updateSLAAlertInstance("test-feed1", "test-cluster", dateOne, EntityType.FEED.toString());
-        Assert.assertEquals(Boolean.TRUE, store.getEntityAlertList("test-feed1",
+        Assert.assertEquals(Boolean.TRUE, store.getAlertInstancesList("test-feed1",
                 "test-cluster", dateOne, EntityType.FEED.toString()).get(0).getIsSLAHighMissed());
     }
 
@@ -171,7 +171,7 @@ public class MonitoringJdbcStateStoreTest extends AbstractTestBase {
         store.putSLAAlertInstance("test-process", "test-cluster", EntityType.PROCESS.toString(),
                 dateOne, Boolean.TRUE, Boolean.FALSE);
         store.updateSLAAlertInstance("test-process", "test-cluster", dateOne, EntityType.PROCESS.toString());
-        Assert.assertEquals(Boolean.TRUE, store.getEntityAlertList("test-process",
+        Assert.assertEquals(Boolean.TRUE, store.getAlertInstancesList("test-process",
                 "test-cluster", dateOne, EntityType.PROCESS.toString()).get(0).getIsSLAHighMissed());
     }
 

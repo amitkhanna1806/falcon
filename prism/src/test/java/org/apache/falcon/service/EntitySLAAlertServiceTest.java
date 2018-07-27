@@ -105,7 +105,7 @@ public class EntitySLAAlertServiceTest extends AbstractTestBase {
         }
     }
 
-    @Test(expectedExceptions = javax.persistence.NoResultException.class)
+    @Test
     public static void processSLALowCandidates() throws FalconException, InterruptedException{
 
         Date dateOne =  new Date(System.currentTimeMillis()-100000);
@@ -137,11 +137,11 @@ public class EntitySLAAlertServiceTest extends AbstractTestBase {
 
         EntitySLAAlertService.get().init();
         Thread.sleep(10*1000);
-        Assert.assertTrue(monitoringJdbcStateStore.getEntityAlertList("test-feed", "test-cluster",
-                dateOne, EntityType.FEED.toString()).get(0).getIsSLALowMissed());
+        Assert.assertEquals(monitoringJdbcStateStore.getAlertInstancesList("test-feed", "test-cluster",
+                dateOne, EntityType.FEED.toString()).size(), 0);
     }
 
-    @Test(expectedExceptions = javax.persistence.NoResultException.class)
+    @Test
     public static void processSLACandidateProcess() throws FalconException, InterruptedException{
         Date dateOne =  new Date(System.currentTimeMillis()-130000);
 
@@ -172,12 +172,12 @@ public class EntitySLAAlertServiceTest extends AbstractTestBase {
 
 
         Thread.sleep(10*1000);
-        Assert.assertTrue(monitoringJdbcStateStore.getEntityAlertList("test-process", "test-cluster", dateOne,
-                EntityType.PROCESS.name()).get(0).getIsSLAHighMissed());
+        Assert.assertEquals(monitoringJdbcStateStore.getAlertInstancesList("test-process", "test-cluster", dateOne,
+                EntityType.PROCESS.name()).size(), 0);
 
     }
 
-    @Test(expectedExceptions = javax.persistence.NoResultException.class)
+    @Test
     public static void processSLAHighCandidates() throws FalconException, InterruptedException{
 
         Date dateOne =  new Date(System.currentTimeMillis()-130000);
@@ -207,7 +207,7 @@ public class EntitySLAAlertServiceTest extends AbstractTestBase {
 
         EntitySLAAlertService.get().init();
         Thread.sleep(10*1000);
-        Assert.assertTrue(monitoringJdbcStateStore.getEntityAlertList("test-feed", "test-cluster",
-                dateOne, EntityType.FEED.toString()).get(0).getIsSLAHighMissed());
+        Assert.assertEquals(monitoringJdbcStateStore.getAlertInstancesList("test-feed", "test-cluster",
+                dateOne, EntityType.FEED.toString()).size(), 0);
     }
 }
