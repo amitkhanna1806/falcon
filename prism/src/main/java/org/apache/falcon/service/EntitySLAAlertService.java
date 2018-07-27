@@ -147,13 +147,13 @@ public final class EntitySLAAlertService implements FalconService, EntitySLAList
                             store.putSLAAlertInstance(entityName, clusterName, entityType,
                                     nominalTime, true, true);
                         } else {
-                            LOG.info("Entity : {} Cluster : {} Nominal Time : {} missed SLALow is already present in DB"
+                            LOG.info("Entity : {} Cluster : {} Nominal Time : {} missed SLA Low is already present in DB"
                                     , entityName, entityType, clusterName, nominalTime);
                         }
                     } else {
                         store.updateSLAAlertInstance(entityName, clusterName, nominalTime, entityType);
                     }
-                    LOG.info("Entity :{} EntityType : {} Cluster: {} Nominal Time: {} missed SLAHigh", entityName,
+                    LOG.debug("Entity :{} EntityType : {} Cluster: {} Nominal Time: {} missed SLA High", entityName,
                             entityType, clusterName , nominalTime);
                     highSLAMissed(entityName, clusterName, EntityType.getEnum(entityType), nominalTime);
                 }

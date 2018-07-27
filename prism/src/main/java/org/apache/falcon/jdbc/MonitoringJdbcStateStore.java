@@ -244,7 +244,7 @@ public class MonitoringJdbcStateStore {
         entityManager.close();
     }
 
-    public List<EntitySLAAlertBean> getEntityAlertList(String entityName, String clusterName, Date nominalTime,
+    public List<EntitySLAAlertBean> getAlertInstancesList(String entityName, String clusterName, Date nominalTime,
                                                      String entityType) {
         EntityManager entityManager = getEntityManager();
         beginTransaction(entityManager);
