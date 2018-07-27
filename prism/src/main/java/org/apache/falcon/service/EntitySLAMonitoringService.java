@@ -567,7 +567,7 @@ public final class EntitySLAMonitoringService implements ConfigurationChangeList
         }
         Entity entity = EntityUtil.getEntity(entityType, entityName);
 
-        if (entityType.equals(EntityType.FEED.toString())) {
+        if (entityType.equalsIgnoreCase(EntityType.FEED.toString())) {
             Sla sla = FeedHelper.getSLA(clusterName, (Feed) entity);
 
             if (sla != null) {

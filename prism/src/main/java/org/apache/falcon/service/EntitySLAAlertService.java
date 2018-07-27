@@ -142,11 +142,17 @@ public final class EntitySLAAlertService implements FalconService, EntitySLAList
                     LOG.info("Entity : {} Cluster : {} Nominal Time : {} missed SLALow", entityName, entityType,
                             clusterName, nominalTime);
                 } else if (schedulableEntityInstance.getTags().contains(EntitySLAMonitoringService.get().TAG_CRITICAL)){
-                    if (entityType.equalsIgnoreCase(EntityType.PROCESS.name())){
-                        store.putSLAAlertInstance(entityName, clusterName, entityType,
-                                nominalTime, true, false);
+                    if (entityType.equalsIgnoreCase(EntityType.PROCESS.name())) {
+                        if (store.getEntityAlertList(entityName, clusterName, nominalTime, entityType).size() == 0){
+                            store.putSLAAlertInstance(entityName, clusterName, entityType,
+                                    nominalTime, true, true);
+                        } else {
+                            LOG.info("Entity : {} Cluster : {} Nominal Time : {} missed SLALow is already present in DB"
+                                    , entityName, entityType, clusterName, nominalTime);
+                        }
+                    } else {
+                        store.updateSLAAlertInstance(entityName, clusterName, nominalTime, entityType);
                     }
-                    store.updateSLAAlertInstance(entityName, clusterName, nominalTime, entityType);
                     LOG.info("Entity :{} EntityType : {} Cluster: {} Nominal Time: {} missed SLAHigh", entityName,
                             entityType, clusterName , nominalTime);
                     highSLAMissed(entityName, clusterName, EntityType.getEnum(entityType), nominalTime);

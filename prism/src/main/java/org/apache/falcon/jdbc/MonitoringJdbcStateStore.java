@@ -244,7 +244,7 @@ public class MonitoringJdbcStateStore {
         entityManager.close();
     }
 
-    public EntitySLAAlertBean getEntityAlertInstance(String entityName, String clusterName, Date nominalTime,
+    public List<EntitySLAAlertBean> getEntityAlertList(String entityName, String clusterName, Date nominalTime,
                                                      String entityType) {
         EntityManager entityManager = getEntityManager();
         beginTransaction(entityManager);
@@ -255,7 +255,7 @@ public class MonitoringJdbcStateStore {
         q.setParameter(EntitySLAAlertBean.NOMINAL_TIME, nominalTime);
         q.setParameter(EntitySLAAlertBean.ENTITY_TYPE, entityType.toLowerCase());
         try {
-            return q.getSingleResult();
+            return q.getResultList();
         } finally {
             commitAndCloseTransaction(entityManager);
         }

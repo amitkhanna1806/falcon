@@ -137,8 +137,8 @@ public class EntitySLAAlertServiceTest extends AbstractTestBase {
 
         EntitySLAAlertService.get().init();
         Thread.sleep(10*1000);
-        Assert.assertTrue(monitoringJdbcStateStore.getEntityAlertInstance("test-feed", "test-cluster",
-                dateOne, EntityType.FEED.toString()).getIsSLALowMissed());
+        Assert.assertTrue(monitoringJdbcStateStore.getEntityAlertList("test-feed", "test-cluster",
+                dateOne, EntityType.FEED.toString()).get(0).getIsSLALowMissed());
     }
 
     @Test(expectedExceptions = javax.persistence.NoResultException.class)
@@ -172,8 +172,8 @@ public class EntitySLAAlertServiceTest extends AbstractTestBase {
 
 
         Thread.sleep(10*1000);
-        Assert.assertTrue(monitoringJdbcStateStore.getEntityAlertInstance("test-process", "test-cluster", dateOne,
-                EntityType.PROCESS.name()).getIsSLAHighMissed());
+        Assert.assertTrue(monitoringJdbcStateStore.getEntityAlertList("test-process", "test-cluster", dateOne,
+                EntityType.PROCESS.name()).get(0).getIsSLAHighMissed());
 
     }
 
@@ -207,7 +207,7 @@ public class EntitySLAAlertServiceTest extends AbstractTestBase {
 
         EntitySLAAlertService.get().init();
         Thread.sleep(10*1000);
-        Assert.assertTrue(monitoringJdbcStateStore.getEntityAlertInstance("test-feed", "test-cluster",
-                dateOne, EntityType.FEED.toString()).getIsSLAHighMissed());
+        Assert.assertTrue(monitoringJdbcStateStore.getEntityAlertList("test-feed", "test-cluster",
+                dateOne, EntityType.FEED.toString()).get(0).getIsSLAHighMissed());
     }
 }
