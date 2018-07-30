@@ -38,7 +38,6 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import java.io.File;
@@ -105,7 +104,7 @@ public class EntitySLAAlertServiceTest extends AbstractTestBase {
         }
     }
 
-    @Test
+    @Test(expectedExceptions = javax.persistence.NoResultException.class)
     public static void processSLALowCandidates() throws FalconException, InterruptedException{
 
         Date dateOne =  new Date(System.currentTimeMillis()-100000);
@@ -137,11 +136,11 @@ public class EntitySLAAlertServiceTest extends AbstractTestBase {
 
         EntitySLAAlertService.get().init();
         Thread.sleep(10*1000);
-        Assert.assertEquals(monitoringJdbcStateStore.getAlertInstancesList("test-feed", "test-cluster",
-                dateOne, EntityType.FEED.toString()).size(), 0);
+        Assert.assertTrue(monitoringJdbcStateStore.getEntityAlertInstance("test-feed", "test-cluster",
+                dateOne, EntityType.FEED.toString()).getIsSLALowMissed());
     }
 
-    @Test
+    @Test(expectedExceptions = javax.persistence.NoResultException.class)
     public static void processSLACandidateProcess() throws FalconException, InterruptedException{
         Date dateOne =  new Date(System.currentTimeMillis()-130000);
 
@@ -172,12 +171,12 @@ public class EntitySLAAlertServiceTest extends AbstractTestBase {
 
 
         Thread.sleep(10*1000);
-        Assert.assertEquals(monitoringJdbcStateStore.getAlertInstancesList("test-process", "test-cluster", dateOne,
-                EntityType.PROCESS.name()).size(), 0);
+        Assert.assertTrue(monitoringJdbcStateStore.getEntityAlertInstance("test-process", "test-cluster", dateOne,
+                EntityType.PROCESS.name()).getIsSLAHighMissed());
 
     }
 
-    @Test
+    @Test(expectedExceptions = javax.persistence.NoResultException.class)
     public static void processSLAHighCandidates() throws FalconException, InterruptedException{
 
         Date dateOne =  new Date(System.currentTimeMillis()-130000);
@@ -207,7 +206,7 @@ public class EntitySLAAlertServiceTest extends AbstractTestBase {
 
         EntitySLAAlertService.get().init();
         Thread.sleep(10*1000);
-        Assert.assertEquals(monitoringJdbcStateStore.getAlertInstancesList("test-feed", "test-cluster",
-                dateOne, EntityType.FEED.toString()).size(), 0);
+        Assert.assertTrue(monitoringJdbcStateStore.getEntityAlertInstance("test-feed", "test-cluster",
+                dateOne, EntityType.FEED.toString()).getIsSLAHighMissed());
     }
 }
