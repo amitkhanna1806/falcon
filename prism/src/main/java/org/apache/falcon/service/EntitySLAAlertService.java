@@ -143,13 +143,8 @@ public final class EntitySLAAlertService implements FalconService, EntitySLAList
                             clusterName, nominalTime);
                 } else if (schedulableEntityInstance.getTags().contains(EntitySLAMonitoringService.get().TAG_CRITICAL)){
                     if (entityType.equalsIgnoreCase(EntityType.PROCESS.name())) {
-                        if (store.isSLAAlertInstanceAbsent(entityName, clusterName, entityType, nominalTime)){
-                            store.putSLAAlertInstance(entityName, clusterName, entityType,
+                        store.putSLAAlertInstance(entityName, clusterName, entityType,
                                     nominalTime, true, true);
-                        } else {
-                            LOG.info("Entity : {} Cluster : {} Nominal Time : {} missed SLA Low is already present in DB"
-                                    , entityName, entityType, clusterName, nominalTime);
-                        }
                     } else {
                         store.updateSLAAlertInstance(entityName, clusterName, nominalTime, entityType);
                     }
