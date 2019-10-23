@@ -18,10 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.falcon.entity.parser.EntityParser;
 import org.apache.falcon.entity.parser.EntityParserFactory;
 import org.apache.falcon.entity.v0.EntityType;
-import org.apache.falcon.entity.v0.feed.Cluster;
-import org.apache.falcon.entity.v0.feed.Feed;
-import org.apache.falcon.entity.v0.feed.Location;
-import org.apache.falcon.entity.v0.feed.Validity;
+import org.apache.falcon.entity.v0.feed.*;
 import org.apache.falcon.entity.v0.process.Process;
 import org.apache.hadoop.fs.Path;
 
@@ -47,9 +44,6 @@ public class ColoMigration {
         System.out.println("Number of files: " + listOfFiles.length);
         for (File file : listOfFiles) {
             if (file.isFile()) {
-                if (file.getName().contains("merlin")) {
-                    continue;
-                }
                 System.out.println(file.getName());
                 EntityType type = EntityType.getEnum(entityType);
                 EntityParser<?> entityParser = EntityParserFactory.getParser(type);
@@ -66,9 +60,18 @@ public class ColoMigration {
 
                             List<org.apache.falcon.entity.v0.process.Cluster> processClusterToRemove = new ArrayList<>();
                             for (org.apache.falcon.entity.v0.process.Cluster cluster : clusters) {
-                                if (cluster.getName().equals("maa1-beryl")) {
+                                if (cluster.getName().contains("maa1-beryl")) {
                                     processClusterToRemove.add(cluster);
                                 }
+                                if (cluster.getName().contains("pek1-pyrite")) {
+                                    processClusterToRemove.add(cluster);
+                                }
+                                if (cluster.getName().contains("ams1-azurite")) {
+                                    processClusterToRemove.add(cluster);
+                                }
+//                                if (cluster.getName().contains("dfw2-garnet")) {
+//                                    processClusterToRemove.add(cluster);
+//                                }
                             }
                             clusters.removeAll(processClusterToRemove);
 
@@ -99,9 +102,9 @@ public class ColoMigration {
 //                                }
                             }
 //
-                                if (processClusterNames.size() != 0) {
-                                    processClusterNames.add("prism");
-                                }
+                            if (processClusterNames.size() != 0) {
+                                processClusterNames.add("prism");
+                            }
 //
 //
 //                            if(filterAmsP == true) {
@@ -111,47 +114,77 @@ public class ColoMigration {
 //                                processClusterNames.add(clusterToadd.getName());
 //                            }
 //
-                                if (filter) {
-                                    for (String colo : processClusterNames) {
-                                        File entityFile = new File(newPath + File.separator + colo + File.separator +
-                                                file.getName());
-                                        entityFile.getParentFile().mkdirs();
-                                        if (!entityFile.createNewFile()) {
-                                            System.out.println("Not able to stage the entities in the tmp path");
-                                            return;
-                                        }
-                                        out = new FileOutputStream(entityFile);
-                                        type.getMarshaller().marshal(process, out);
-                                        out.close();
+                            if (filter) {
+                                for (String colo : processClusterNames) {
+                                    File entityFile = new File(newPath + File.separator + colo + File.separator +
+                                            file.getName());
+                                    entityFile.getParentFile().mkdirs();
+                                    if (!entityFile.createNewFile()) {
+                                        System.out.println("Not able to stage the entities in the tmp path");
+                                        return;
                                     }
+                                    out = new FileOutputStream(entityFile);
+                                    type.getMarshaller().marshal(process, out);
+                                    out.close();
                                 }
+                            }
 
+                            break;
+
+
+                        case FEED:
+                            Feed feed = (Feed) entityParser.parse(xmlStream);
+
+                            org.apache.falcon.entity.v0.feed.Clusters feedClusters = feed.getClusters();
+                            List<org.apache.falcon.entity.v0.feed.Cluster> feed_clusters = feedClusters.getClusters();
+
+
+                            List<org.apache.falcon.entity.v0.feed.Cluster> feedClusterToRemove = new ArrayList<>();
+                            for (org.apache.falcon.entity.v0.feed.Cluster cluster : feed_clusters) {
+                                if (cluster.getName().contains("maa1-beryl")) {
+                                    feedClusterToRemove.add(cluster);
+                                }
+                                if (cluster.getName().contains("pek1-pyrite")) {
+                                    feedClusterToRemove.add(cluster);
+                                }
+                                if (cluster.getName().contains("ams1-azurite")) {
+                                    feedClusterToRemove.add(cluster);
+                                }
+//                                if (cluster.getName().contains("dfw2-garnet")) {
+//                                    feedClusterToRemove.add(cluster);
+//                                }
+                            }
+                            feed_clusters.removeAll(feedClusterToRemove);
+
+                            int source = 0;
+                            int target=0;
+                            for (Cluster feed_cluster : feed_clusters) {
+//                                System.out.println("for cluster " + feed_clusters);
+//                                System.out.println("for type  " + feed_cluster.getType());
+
+                                if(feed_cluster.getType()!=null) {
+                                    if (feed_cluster.getType().equals(ClusterType.SOURCE))
+                                        source++;
+                                    else if (feed_cluster.getType().equals(ClusterType.TARGET))
+                                        target++;
+                                }
+                            }
+
+//                            System.out.println("source is " + source);
+//                            System.out.println("target is " + target);
+                            if(source==0 && target!=0)
                                 break;
 
 
-                                case FEED:
-                                    Feed feed = (Feed) entityParser.parse(xmlStream);
 
-                                    org.apache.falcon.entity.v0.feed.Clusters feedClusters = feed.getClusters();
-                                    List<org.apache.falcon.entity.v0.feed.Cluster> feed_clusters = feedClusters.getClusters();
-
-
-                                    List<org.apache.falcon.entity.v0.feed.Cluster> feedClusterToRemove = new ArrayList<>();
-                                    for (org.apache.falcon.entity.v0.feed.Cluster cluster : feed_clusters) {
-                                        if (cluster.getName().equals("maa1-beryl")) {
-                                            feedClusterToRemove.add(cluster);
-                                        }
-                                    }
-                                    feed_clusters.removeAll(feedClusterToRemove);
-
-
-                                    Cluster clusterToaddFeed = new Cluster();
+//                                    Cluster clusterToaddFeed = new Cluster();
 //
 //
 //                            boolean filterAms = false;
-                                    List<String> feedClusterNames = new ArrayList<>();
-                                    for (org.apache.falcon.entity.v0.feed.Cluster cluster : feed_clusters) {
-                                        feedClusterNames.add(cluster.getName());
+                            List<String> feedClusterNames = new ArrayList<>();
+                            for (org.apache.falcon.entity.v0.feed.Cluster cluster : feed_clusters) {
+                                System.out.println("adding cluster " + cluster.getName());
+                                feedClusterNames.add(cluster.getName());
 //                                if(cluster.getName().equals("maa1-beryl")){
 //                                    Validity validity = new Validity();
 //                                    validity.setStart(cluster.getValidity().getStart());
@@ -178,7 +211,7 @@ public class ColoMigration {
 //                                                filterAms = true;
 //                                            } else if (StringUtils.contains(location.getPath(), "Ams1")) {
 //                                                location.setPath(location.getPath().replace("Ams1", "Maa1"));
-//                                                filterAms = true;
+//                                                filtsubmitAndScheduleerAms = true;
 //                                            } else if (StringUtils.contains(location.getPath(), "AMS1")) {
 //                                                location.setPath(location.getPath().replace("AMS1", "MAA1"));
 //                                                filterAms = true;
@@ -186,10 +219,10 @@ public class ColoMigration {
 //                                        }
 //                                    }
 //                                }
-//                            }
-                                        if (feedClusterNames.size() != 0) {
-                                            feedClusterNames.add("prism");
-                                        }
+                            }
+                            if (feedClusterNames.size() != 0) {
+                                feedClusterNames.add("prism");
+                            }
 
 //                            if(filterAms == true) {
 
@@ -199,32 +232,33 @@ public class ColoMigration {
 //                                feed_clusters.add(clusterToaddFeed);
 //                                feedClusterNames.add(clusterToaddFeed.getName());
 //                            }
-                                        for (String colo : feedClusterNames) {
-
-                                            File entityFile = new File(newPath + File.separator + colo + File.separator
-                                                    + file.getName());
-                                            entityFile.getParentFile().mkdirs();
-                                            System.out.println("File path : " + entityFile.getAbsolutePath());
-                                            if (!entityFile.createNewFile()) {
-                                                System.out.println("Not able to stage the entities in the tmp path");
-                                                return;
-                                            }
-                                            out = new FileOutputStream(entityFile);
-                                            type.getMarshaller().marshal(feed, out);
-                                            out.close();
-                                        }
-                                    }
+                            for (String colo : feedClusterNames) {
+                                System.out.println(colo);
+                                File entityFile = new File(newPath + File.separator + colo + File.separator
+                                        + file.getName());
+                                entityFile.getParentFile().mkdirs();
+                                System.out.println("File path : " + entityFile.getAbsolutePath());
+                                Boolean file_created = entityFile.createNewFile();
+                                System.out.println(file_created);
+                                if (!file_created) {
+                                    System.out.println("Not able to stage the entities in the tmp path");
+                                    return;
+                                }
+                                out = new FileOutputStream(entityFile);
+                                type.getMarshaller().marshal(feed, out);
+                                out.close();
                             }
-                    } catch(FileNotFoundException e){
-                        System.out.println(e.toString());
-                    } catch(FalconException e){
-                        System.out.println(e.toString());
-                    } catch(IOException e){
-                        e.printStackTrace();
-                    } catch(Exception e){
-                        System.out.println(e.toString());
                     }
+                } catch (FileNotFoundException e) {
+                    System.out.println(e.toString());
+                } catch (FalconException e) {
+                    System.out.println(e.toString());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    System.out.println(e.toString());
                 }
             }
         }
     }
+}
